@@ -62,5 +62,5 @@ nbdist/
 .history/
 
 
-__debug__bin
+__debug_bin
 sqlite.db
