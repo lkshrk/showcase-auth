@@ -1,7 +1,6 @@
 package helper
 
 import (
-	"errors"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -11,6 +10,26 @@ type JwtWrapper struct {
 	secretKey       string
 	issuer          string
 	expirationHours int64
+}
+
+type NonParseableError struct{}
+
+func (n *NonParseableError) Error() string {
+	return "couldn't parse claims"
+}
+
+func newNonParseableError() *NonParseableError {
+	return &NonParseableError{}
+}
+
+type TokenExpiredError struct{}
+
+func (n *TokenExpiredError) Error() string {
+	return "couldn't parse claims"
+}
+
+func newTokenExpiredError() *TokenExpiredError {
+	return &TokenExpiredError{}
 }
 
 func NewJwtWrapper(secretKey string, issuer string, expirationHours int64) JwtWrapper {
@@ -56,12 +75,12 @@ func (j *JwtWrapper) ValidateToken(signedToken string) (*JwtClaim, error) {
 
 	claims, ok := token.Claims.(*JwtClaim)
 	if !ok {
-		err = errors.New("couldn't parse claims")
+		err = newNonParseableError()
 		return nil, err
 	}
 
 	if claims.ExpiresAt < time.Now().Local().Unix() {
-		err = errors.New("JWT is expired")
+		err = newTokenExpiredError()
 		return nil, err
 	}
 

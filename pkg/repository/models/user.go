@@ -2,14 +2,14 @@ package models
 
 import (
 	"golang.org/x/crypto/bcrypt"
-	"gorm.io/gorm"
 )
 
 type User struct {
-	gorm.Model
-	Username string
+	Username string `gorm:"primaryKey"`
 	Role     string
 	Password string
+	Updated  int64 `gorm:"autoUpdateTime"`
+	Created  int64 `gorm:"autoCreateTime"`
 }
 
 func (user *User) CheckPassword(providedPassword string) error {
