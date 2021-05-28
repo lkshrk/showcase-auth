@@ -1,0 +1,1 @@
+![BUILD](https://github.com/lkshrk/showcase-auth/actions/workflows/test.yml/badge.svg?branch=main)

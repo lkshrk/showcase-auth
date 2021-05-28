@@ -64,3 +64,4 @@ nbdist/
 
 __debug_bin
 sqlite.db
+mocks/
