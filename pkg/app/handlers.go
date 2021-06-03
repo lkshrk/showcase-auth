@@ -10,10 +10,15 @@ import (
 
 func (s *Server) CreateUser(w http.ResponseWriter, r *http.Request) {
 
-	// if !s.verifyTokenAndRole(r, "admin") {
-	// 	w.WriteHeader(http.StatusUnauthorized)
-	// 	return
-	// }
+	if r.Method != http.MethodPost {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	if !s.verifyTokenAndRole(r, "admin") {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
 
 	var newUserRequest api.NewUserRequest
 
@@ -34,6 +39,12 @@ func (s *Server) CreateUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) Login(w http.ResponseWriter, r *http.Request) {
+
+	if r.Method != http.MethodPost {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
 	var creds api.LoginRequest
 
 	err := json.NewDecoder(r.Body).Decode(&creds)

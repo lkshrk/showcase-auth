@@ -5,7 +5,7 @@ build:
 generate-mocks:
 	go get github.com/golang/mock/mockgen
 	mkdir -p ./pkg/mocks
-	mockgen -destination=pkg/mocks/mock_userRepository.go -package=mocks harke.me/showcase-auth/pkg/api UserRepository
+	go generate ./...
 
 test:
 	go test -v ./...

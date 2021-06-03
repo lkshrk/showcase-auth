@@ -5,15 +5,15 @@ import (
 	"net/http"
 
 	"harke.me/showcase-auth/pkg/api"
-	"harke.me/showcase-auth/pkg/helper"
+	"harke.me/showcase-auth/pkg/utils"
 )
 
 type Server struct {
 	userService api.UserService
-	jwtWrapper  helper.JwtWrapper
+	jwtWrapper  utils.JwtWrapper
 }
 
-func NewServer(userService api.UserService, jwtWrapper helper.JwtWrapper) *Server {
+func NewServer(userService api.UserService, jwtWrapper utils.JwtWrapper) *Server {
 	return &Server{
 		userService,
 		jwtWrapper,
