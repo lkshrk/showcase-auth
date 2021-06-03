@@ -11,6 +11,7 @@ import (
 type UserService interface {
 	New(user NewUserRequest) error
 	Login(credentials LoginRequest) (string, error)
+	ValidateTokenAndRole(token string, role string) bool
 }
 
 type UserRepository interface {
@@ -60,4 +61,12 @@ func (u *userService) Login(credentials LoginRequest) (string, error) {
 
 	return u.jwtWrapper.GenerateToken(user.Username, user.Role)
 
+}
+
+func (u *userService) ValidateTokenAndRole(token string, role string) bool {
+	claims, err := u.jwtWrapper.ValidateToken(token)
+	if err != nil {
+		return false
+	}
+	return claims.Role == role
 }

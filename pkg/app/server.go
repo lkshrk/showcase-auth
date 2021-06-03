@@ -9,20 +9,22 @@ import (
 )
 
 type Server struct {
-	userService api.UserService
-	jwtWrapper  utils.JwtWrapper
+	userService      api.UserService
+	UserRouteHandler UserRouteHandler
+	jwtWrapper       utils.JwtWrapper
 }
 
-func NewServer(userService api.UserService, jwtWrapper utils.JwtWrapper) *Server {
+func NewServer(userService api.UserService, userRouteHandler UserRouteHandler, jwtWrapper utils.JwtWrapper) *Server {
 	return &Server{
 		userService,
+		userRouteHandler,
 		jwtWrapper,
 	}
 }
 
 func (s *Server) Run() error {
 
-	s.Routes()
+	RegisterRoutes(s.UserRouteHandler)
 
 	err := http.ListenAndServe(":8000", nil)
 

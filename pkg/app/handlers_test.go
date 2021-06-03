@@ -13,7 +13,6 @@ import (
 	"harke.me/showcase-auth/pkg/api"
 	"harke.me/showcase-auth/pkg/app"
 	"harke.me/showcase-auth/pkg/mocks"
-	"harke.me/showcase-auth/pkg/utils"
 )
 
 func TestCreateUserTokenValidation(t *testing.T) {
@@ -22,9 +21,8 @@ func TestCreateUserTokenValidation(t *testing.T) {
 	defer mockCtrl.Finish()
 
 	mockUserService := mocks.NewMockUserService(mockCtrl)
-	mockJwtWrapper := mocks.NewMockJwtWrapper(mockCtrl)
 
-	cut := app.NewServer(mockUserService, mockJwtWrapper)
+	cut := app.NewUserRouteHandler(mockUserService)
 
 	t.Run("No POST request", func(t *testing.T) {
 
@@ -77,25 +75,7 @@ func TestCreateUserTokenValidation(t *testing.T) {
 		req.Header.Add("Authorization", "Bearer "+bearer)
 		recorder := httptest.NewRecorder()
 
-		mockJwtWrapper.EXPECT().ValidateToken(gomock.Eq(bearer)).Return(nil, errors.New("some error"))
-
-		cut.CreateUser(recorder, req)
-
-		assert.Equal(t, http.StatusUnauthorized, recorder.Result().StatusCode)
-	})
-
-	t.Run("Unauthorized with wrong role", func(t *testing.T) {
-
-		const bearer = "123abc"
-
-		req, err := http.NewRequest("POST", "", nil)
-		if err != nil {
-			return
-		}
-		req.Header.Add("Authorization", "Bearer "+bearer)
-		recorder := httptest.NewRecorder()
-
-		mockJwtWrapper.EXPECT().ValidateToken(gomock.Eq(bearer)).Return(&utils.JwtClaim{Role: "role123"}, nil)
+		mockUserService.EXPECT().ValidateTokenAndRole(gomock.Eq(bearer), "admin").Return(false)
 
 		cut.CreateUser(recorder, req)
 
@@ -113,7 +93,7 @@ func TestCreateUserTokenValidation(t *testing.T) {
 		req.Header.Add("Authorization", "Bearer "+bearer)
 		recorder := httptest.NewRecorder()
 
-		mockJwtWrapper.EXPECT().ValidateToken(gomock.Eq(bearer)).Return(&utils.JwtClaim{Role: "admin"}, nil)
+		mockUserService.EXPECT().ValidateTokenAndRole(gomock.Eq(bearer), "admin").Return(true)
 
 		cut.CreateUser(recorder, req)
 
@@ -128,9 +108,8 @@ func TestCreateNewUser(t *testing.T) {
 	defer mockCtrl.Finish()
 
 	mockUserService := mocks.NewMockUserService(mockCtrl)
-	mockJwtWrapper := mocks.NewMockJwtWrapper(mockCtrl)
 
-	cut := app.NewServer(mockUserService, mockJwtWrapper)
+	cut := app.NewUserRouteHandler(mockUserService)
 
 	const bearer = "123abc"
 
@@ -141,7 +120,7 @@ func TestCreateNewUser(t *testing.T) {
 	}
 	requestJson := fmt.Sprintf("{\"username\":\"%s\",\"password\":\"%s\",\"role\":\"%s\"}", userRequest.Username, userRequest.Password, userRequest.Role)
 
-	mockJwtWrapper.EXPECT().ValidateToken(gomock.Eq(bearer)).AnyTimes().Return(&utils.JwtClaim{Role: "admin"}, nil)
+	mockUserService.EXPECT().ValidateTokenAndRole(gomock.Eq(bearer), "admin").AnyTimes().Return(true)
 
 	t.Run("Server error with valid request", func(t *testing.T) {
 
@@ -185,9 +164,8 @@ func TestLogin(t *testing.T) {
 	defer mockCtrl.Finish()
 
 	mockUserService := mocks.NewMockUserService(mockCtrl)
-	mockJwtWrapper := mocks.NewMockJwtWrapper(mockCtrl)
 
-	cut := app.NewServer(mockUserService, mockJwtWrapper)
+	cut := app.NewUserRouteHandler(mockUserService)
 
 	t.Run("No POST request", func(t *testing.T) {
 

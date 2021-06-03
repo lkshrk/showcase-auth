@@ -8,14 +8,24 @@ import (
 	"harke.me/showcase-auth/pkg/api"
 )
 
-func (s *Server) CreateUser(w http.ResponseWriter, r *http.Request) {
+type userHandler struct {
+	userService api.UserService
+}
+
+func NewUserRouteHandler(userService api.UserService) UserRouteHandler {
+	return &userHandler{
+		userService: userService,
+	}
+}
+
+func (u *userHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method != http.MethodPost {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	if !s.verifyTokenAndRole(r, "admin") {
+	if !u.extractAndValidateToken(r, "admin") {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
@@ -28,7 +38,7 @@ func (s *Server) CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = s.userService.New(newUserRequest)
+	err = u.userService.New(newUserRequest)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -38,7 +48,7 @@ func (s *Server) CreateUser(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (s *Server) Login(w http.ResponseWriter, r *http.Request) {
+func (u *userHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method != http.MethodPost {
 		w.WriteHeader(http.StatusBadRequest)
@@ -53,7 +63,7 @@ func (s *Server) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	signedToken, err := s.userService.Login(creds)
+	signedToken, err := u.userService.Login(creds)
 	if err != nil {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
@@ -63,7 +73,7 @@ func (s *Server) Login(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (s *Server) verifyTokenAndRole(r *http.Request, role string) bool {
+func (u *userHandler) extractAndValidateToken(r *http.Request, role string) bool {
 	const authHeader = "Authorization"
 	const tokenPrefix = "Bearer "
 
@@ -73,9 +83,6 @@ func (s *Server) verifyTokenAndRole(r *http.Request, role string) bool {
 		return false
 	}
 
-	claims, err := s.jwtWrapper.ValidateToken(splitArr[1])
-	if err != nil {
-		return false
-	}
-	return claims.Role == role
+	return u.userService.ValidateTokenAndRole(splitArr[1], role)
+
 }

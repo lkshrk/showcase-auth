@@ -42,7 +42,9 @@ func run() error {
 
 	userService := api.NewUserService(storage, jwtWrapper)
 
-	server := app.NewServer(userService, jwtWrapper)
+	userRouteHandler := app.NewUserRouteHandler(userService)
+
+	server := app.NewServer(userService, userRouteHandler, jwtWrapper)
 
 	err = server.Run()
 
