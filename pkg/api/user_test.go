@@ -8,7 +8,6 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"harke.me/showcase-auth/pkg/api"
-	"harke.me/showcase-auth/pkg/helper"
 	"harke.me/showcase-auth/pkg/mocks"
 	"harke.me/showcase-auth/pkg/repository/models"
 )
@@ -44,7 +43,7 @@ func TestNewUser(t *testing.T) {
 	defer mockCtrl.Finish()
 
 	mockRepo := mocks.NewMockUserRepository(mockCtrl)
-	jwtWrapper := helper.NewJwtWrapper("key", "issuer", 24)
+	jwtWrapper := mocks.NewMockJwtWrapper(mockCtrl)
 
 	cut := api.NewUserService(mockRepo, jwtWrapper)
 
@@ -92,9 +91,9 @@ func TestLogin(t *testing.T) {
 	defer mockCtrl.Finish()
 
 	mockRepo := mocks.NewMockUserRepository(mockCtrl)
-	jwtWrapper := helper.NewJwtWrapper("key", "issuer", 24)
+	mockJwtWrapper := mocks.NewMockJwtWrapper(mockCtrl)
 
-	cut := api.NewUserService(mockRepo, jwtWrapper)
+	cut := api.NewUserService(mockRepo, mockJwtWrapper)
 
 	credentials := api.LoginRequest{
 		Username: "username",
@@ -127,20 +126,23 @@ func TestLogin(t *testing.T) {
 
 	})
 
-	t.Run("password invalid", func(t *testing.T) {
+	t.Run("succesful login", func(t *testing.T) {
 
+		const validToken = "I_AM_A_VALID_TOKEN"
 		user := models.User{
 			Username: credentials.Username,
 			Password: credentials.Password,
+			Role:     "someRole",
 		}
 		user.HashPassword()
 
 		mockRepo.EXPECT().FindUser(gomock.Eq(credentials.Username)).Return(&user, nil)
+		mockJwtWrapper.EXPECT().GenerateToken(gomock.Eq(user.Username), gomock.Eq(user.Role)).Return(validToken, nil)
 
 		token, err := cut.Login(credentials)
 
 		assert.Nil(t, err)
-		assert.NotNil(t, token)
+		assert.Equal(t, validToken, token)
 
 	})
 }

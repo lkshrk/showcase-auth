@@ -19,16 +19,16 @@ func TestCreateUser(t *testing.T) {
 			return
 		}
 
-		storage := repository.NewStorage(db)
+		cut := repository.NewStorage(db)
 
-		err = storage.RunMigrations()
+		err = cut.RunMigrations()
 		assert.Nil(t, err)
 
 	})
 
 	t.Run("unique constraint violated", func(t *testing.T) {
 
-		storage, err := setupStorage()
+		cut, err := setupStorage()
 		if err != nil {
 			return
 		}
@@ -39,10 +39,10 @@ func TestCreateUser(t *testing.T) {
 			Role:     "role",
 		}
 
-		err = storage.CreateUser(user)
+		err = cut.CreateUser(user)
 		assert.Nil(t, err)
 
-		err = storage.CreateUser(user)
+		err = cut.CreateUser(user)
 		assert.Error(t, err, "UNIQUE constraint failed: users.username")
 
 	})
@@ -51,14 +51,14 @@ func TestCreateUser(t *testing.T) {
 
 func TestFindUser(t *testing.T) {
 
-	storage, err := setupStorage()
+	cut, err := setupStorage()
 	if err != nil {
 		return
 	}
 
 	t.Run("user not found", func(t *testing.T) {
 
-		_, err = storage.FindUser("peter")
+		_, err = cut.FindUser("peter")
 		assert.Error(t, err)
 
 	})
@@ -71,9 +71,9 @@ func TestFindUser(t *testing.T) {
 			Role:     "role",
 		}
 
-		storage.CreateUser(user)
+		cut.CreateUser(user)
 
-		actual, err := storage.FindUser(user.Username)
+		actual, err := cut.FindUser(user.Username)
 		if err != nil {
 			return
 		}

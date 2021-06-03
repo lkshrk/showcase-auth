@@ -10,21 +10,21 @@ import (
 func TestCheckPassword(t *testing.T) {
 
 	const password = "securePassword"
-	var sampleUser = models.User{
+	var cut = models.User{
 		Password: password,
 	}
-	sampleUser.HashPassword()
+	cut.HashPassword()
 
 	t.Run("password matches", func(t *testing.T) {
 
-		err := sampleUser.CheckPassword(password)
+		err := cut.CheckPassword(password)
 		assert.Nil(t, err)
 
 	})
 
 	t.Run("password does not match", func(t *testing.T) {
 
-		err := sampleUser.CheckPassword("failPw")
+		err := cut.CheckPassword("failPw")
 		assert.NotNil(t, err)
 
 	})
@@ -33,10 +33,10 @@ func TestCheckPassword(t *testing.T) {
 func TestHashPassword(t *testing.T) {
 
 	const password = "secure123"
-	var sampleUser = models.User{
+	var cut = models.User{
 		Password: password,
 	}
-	sampleUser.HashPassword()
+	cut.HashPassword()
 
-	assert.NotEqual(t, password, sampleUser.Password)
+	assert.NotEqual(t, password, cut.Password)
 }

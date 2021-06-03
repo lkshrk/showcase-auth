@@ -1,15 +1,21 @@
-package helper_test
+package utils_test
 
 import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"harke.me/showcase-auth/pkg/helper"
+	"harke.me/showcase-auth/pkg/utils"
 )
+
+var config = utils.AuthConfig{
+	Secret:          "secretKey123",
+	Issuer:          "issuer",
+	ExpirationHours: 24,
+}
 
 func TestValidateToken(t *testing.T) {
 
-	cut := helper.NewJwtWrapper("secretKey123", "issuer", 24)
+	cut := utils.NewJwtWrapper(config)
 
 	t.Run("non parseable token", func(t *testing.T) {
 
@@ -36,11 +42,10 @@ func TestValidateToken(t *testing.T) {
 
 func TestJwtWrapper(t *testing.T) {
 
-	const issuer = "example.com"
 	const name = "peter"
 	const role = "user"
 
-	cut := helper.NewJwtWrapper("secretKey123", issuer, 24)
+	cut := utils.NewJwtWrapper(config)
 
 	t.Run("create and validate token", func(t *testing.T) {
 		token, err := cut.GenerateToken(name, role)
@@ -55,7 +60,7 @@ func TestJwtWrapper(t *testing.T) {
 
 		assert.Equal(t, name, claim.Subject)
 		assert.Equal(t, role, claim.Role)
-		assert.Equal(t, issuer, claim.Issuer)
+		assert.Equal(t, config.Issuer, claim.Issuer)
 	})
 
 }

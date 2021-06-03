@@ -1,4 +1,6 @@
-package helper
+package utils
+
+//go:generate mockgen -destination=../mocks/mock_jwtWrapper.go -package=mocks harke.me/showcase-auth/pkg/utils JwtWrapper
 
 import (
 	"time"
@@ -6,7 +8,12 @@ import (
 	"github.com/dgrijalva/jwt-go"
 )
 
-type JwtWrapper struct {
+type JwtWrapper interface {
+	GenerateToken(name string, role string) (string, error)
+	ValidateToken(signedToken string) (*JwtClaim, error)
+}
+
+type jwtWrapper struct {
 	secretKey       string
 	issuer          string
 	expirationHours int64
@@ -32,11 +39,11 @@ func newTokenExpiredError() *TokenExpiredError {
 	return &TokenExpiredError{}
 }
 
-func NewJwtWrapper(secretKey string, issuer string, expirationHours int64) JwtWrapper {
-	return JwtWrapper{
-		secretKey,
-		issuer,
-		expirationHours,
+func NewJwtWrapper(config AuthConfig) JwtWrapper {
+	return &jwtWrapper{
+		config.Secret,
+		config.Issuer,
+		config.ExpirationHours,
 	}
 }
 
@@ -45,7 +52,7 @@ type JwtClaim struct {
 	jwt.StandardClaims
 }
 
-func (j *JwtWrapper) GenerateToken(name string, role string) (string, error) {
+func (j *jwtWrapper) GenerateToken(name string, role string) (string, error) {
 	claims := &JwtClaim{
 		Role: role,
 		StandardClaims: jwt.StandardClaims{
@@ -60,7 +67,7 @@ func (j *JwtWrapper) GenerateToken(name string, role string) (string, error) {
 	return token.SignedString([]byte(j.secretKey))
 }
 
-func (j *JwtWrapper) ValidateToken(signedToken string) (*JwtClaim, error) {
+func (j *jwtWrapper) ValidateToken(signedToken string) (*JwtClaim, error) {
 	token, err := jwt.ParseWithClaims(
 		signedToken,
 		&JwtClaim{},

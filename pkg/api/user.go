@@ -1,13 +1,17 @@
 package api
 
 import (
-	"harke.me/showcase-auth/pkg/helper"
 	"harke.me/showcase-auth/pkg/repository/models"
+	"harke.me/showcase-auth/pkg/utils"
 )
+
+//go:generate mockgen -destination=../mocks/mock_userRepository.go -package=mocks harke.me/showcase-auth/pkg/api UserRepository
+//go:generate mockgen -destination=../mocks/mock_userService.go -package=mocks harke.me/showcase-auth/pkg/api UserService
 
 type UserService interface {
 	New(user NewUserRequest) error
 	Login(credentials LoginRequest) (string, error)
+	ValidateTokenAndRole(token string, role string) bool
 }
 
 type UserRepository interface {
@@ -17,10 +21,10 @@ type UserRepository interface {
 
 type userService struct {
 	storage    UserRepository
-	jwtWrapper helper.JwtWrapper
+	jwtWrapper utils.JwtWrapper
 }
 
-func NewUserService(userRepo UserRepository, jwtWrapper helper.JwtWrapper) UserService {
+func NewUserService(userRepo UserRepository, jwtWrapper utils.JwtWrapper) UserService {
 	return &userService{
 		storage:    userRepo,
 		jwtWrapper: jwtWrapper,
@@ -57,4 +61,12 @@ func (u *userService) Login(credentials LoginRequest) (string, error) {
 
 	return u.jwtWrapper.GenerateToken(user.Username, user.Role)
 
+}
+
+func (u *userService) ValidateTokenAndRole(token string, role string) bool {
+	claims, err := u.jwtWrapper.ValidateToken(token)
+	if err != nil {
+		return false
+	}
+	return claims.Role == role
 }

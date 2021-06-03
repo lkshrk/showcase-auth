@@ -5,26 +5,28 @@ import (
 	"net/http"
 
 	"harke.me/showcase-auth/pkg/api"
-	"harke.me/showcase-auth/pkg/helper"
+	"harke.me/showcase-auth/pkg/utils"
 )
 
 type Server struct {
-	userService api.UserService
-	jwtWrapper  helper.JwtWrapper
+	userService      api.UserService
+	UserRouteHandler UserRouteHandler
+	jwtWrapper       utils.JwtWrapper
 }
 
-func NewServer(userService api.UserService, jwtWrapper helper.JwtWrapper) *Server {
+func NewServer(userService api.UserService, userRouteHandler UserRouteHandler, jwtWrapper utils.JwtWrapper) *Server {
 	return &Server{
 		userService,
+		userRouteHandler,
 		jwtWrapper,
 	}
 }
 
 func (s *Server) Run() error {
 
-	s.Routes()
+	mux := SetupHandlers(s.UserRouteHandler)
 
-	err := http.ListenAndServe(":8000", nil)
+	err := http.ListenAndServe(":8000", mux)
 
 	if err != nil {
 		log.Printf("Server - there was an error starting the server: %v", err)
