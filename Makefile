@@ -7,6 +7,11 @@ generate-mocks:
 	mkdir -p ./pkg/mocks
 	go generate ./...
 
+lint:
+	go get -u golang.org/x/lint/golint
+	golint ./...
+	
+
 test:
 	go test -v ./...
 

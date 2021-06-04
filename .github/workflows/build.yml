@@ -1,7 +1,7 @@
 on: [push, pull_request]
 name: build
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
     steps:
     - name: Install Go
@@ -20,6 +20,8 @@ jobs:
         key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
         restore-keys: |
           ${{ runner.os }}-go-
+    - name: lint
+      run: make lint
     - name: Generate mocks
       run: make generate-mocks
     - name: Test
