@@ -23,17 +23,12 @@ func main() {
 
 func run() error {
 
-	configPath, isFound := os.LookupEnv("CONFIG_PATH")
-	if !isFound {
-		// attempt to load config at baseDir
-		configPath = "../../"
-	}
-	config, err := utils.LoadConfig(configPath)
+	config, err := utils.LoadConfig()
 	if err != nil {
 		return err
 	}
 
-	storage, err := setupStorage(config.Db)
+	storage, err := setupStorage(config.Database)
 	if err != nil {
 		return err
 	}
@@ -63,7 +58,7 @@ func setupStorage(config utils.DatabaseConfig) (repository.Storage, error) {
 	if config.InMemory {
 		db, err = gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{})
 	} else {
-		dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", config.Hostname, config.Port, config.User, config.Password, config.Database)
+		dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", config.Hostname, config.Port, config.User, config.Password, config.DB)
 		db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	}
 	if err != nil {
@@ -77,13 +72,17 @@ func setupStorage(config utils.DatabaseConfig) (repository.Storage, error) {
 		return nil, err
 	}
 
-	defaultUser := models.User{
-		Username: config.DefaultUser,
-		Password: config.DefaultPw,
-		Role:     "admin",
+	var users []models.User
+	db.Find(&users)
+	if len(users) == 0 {
+		defaultUser := models.User{
+			Username: config.DefaultUser,
+			Password: config.DefaultPassword,
+			Role:     "admin",
+		}
+		defaultUser.HashPassword()
+		storage.CreateUser(defaultUser)
 	}
-	defaultUser.HashPassword()
-	storage.CreateUser(defaultUser)
 
 	return storage, err
 }

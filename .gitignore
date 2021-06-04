@@ -65,4 +65,4 @@ nbdist/
 __debug_bin
 sqlite.db
 mocks/
-app.env
+config.yml
