@@ -20,6 +20,12 @@ func NewUserRouteHandler(userService api.UserService) UserRouteHandler {
 
 func (u *userHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 
+	setupResponse(&w)
+
+	if r.Method == http.MethodOptions {
+		return
+	}
+
 	if r.Method != http.MethodPost {
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -49,6 +55,12 @@ func (u *userHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (u *userHandler) Login(w http.ResponseWriter, r *http.Request) {
+
+	setupResponse(&w)
+
+	if r.Method == http.MethodOptions {
+		return
+	}
 
 	if r.Method != http.MethodPost {
 		w.WriteHeader(http.StatusBadRequest)
@@ -85,4 +97,10 @@ func (u *userHandler) extractAndValidateToken(r *http.Request, role string) bool
 
 	return u.userService.ValidateTokenAndRole(splitArr[1], role)
 
+}
+
+func setupResponse(w *http.ResponseWriter) {
+	(*w).Header().Set("Access-Control-Allow-Origin", "*")
+	(*w).Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+	(*w).Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 }
