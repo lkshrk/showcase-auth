@@ -8,7 +8,7 @@ require (
 	github.com/spf13/viper v1.10.1
 	github.com/stretchr/testify v1.7.0
 	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519
-	gorm.io/driver/postgres v1.2.3
+	gorm.io/driver/postgres v1.3.5
 	gorm.io/driver/sqlite v1.2.6
-	gorm.io/gorm v1.22.5
+	gorm.io/gorm v1.23.4
 )
