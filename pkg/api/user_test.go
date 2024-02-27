@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
 	"harke.me/showcase-auth/pkg/api"
 	"harke.me/showcase-auth/pkg/mocks"
 	"harke.me/showcase-auth/pkg/repository/models"

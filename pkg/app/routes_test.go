@@ -5,7 +5,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/golang/mock/gomock"
+	"go.uber.org/mock/gomock"
 	"harke.me/showcase-auth/pkg/app"
 	"harke.me/showcase-auth/pkg/mocks"
 )

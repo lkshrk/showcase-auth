@@ -3,13 +3,13 @@ build:
 	go build -v ./...
 
 generate-mocks:
-	go get github.com/golang/mock/mockgen
+	go install go.uber.org/mock/mockgen@latest
 	mkdir -p ./pkg/mocks
 	go generate ./...
 
 lint:
-	go get -u golang.org/x/lint/golint
-	golint ./...
+	go install github.com/mgechev/revive@latest
+	revive ./...
 	
 
 test:

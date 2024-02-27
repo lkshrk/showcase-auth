@@ -21,7 +21,7 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-go-
     - name: lint
-      run: make lint
+      uses: docker://morphy/revive-action:v2
     - name: Generate mocks
       run: make generate-mocks
     - name: Test
